@@ -67,14 +67,48 @@ The `cloud-init.yaml` file performs the following tasks:
 3. Check Docker configuration:
    ```sh
    docker info | grep "Docker Root Dir"
+   
    ```
+## Running SG Lang server with DeepSeek R1
 
+```sh
+docker pull rocm/sgl-dev:upstream_20250312_v1
+docker run \
+  --device=/dev/kfd \
+  --device=/dev/dri \
+  --security-opt seccomp=unconfined \
+  --cap-add=SYS_PTRACE \
+  --group-add video \
+  --privileged \
+  --shm-size 32g \
+  --ipc=host \
+  -p 30000:30000 \
+  -v /mnt/resource_nvme:/mnt/resource_nvme \
+  -e HF_HOME=/mnt/resource_nvme/hf_cache \
+  -e HSA_NO_SCRATCH_RECLAIM=1 \
+  -e GPU_FORCE_BLIT_COPY_SIZE=64 \
+  -e DEBUG_HIP_BLOCK_SYN=1024 \
+  rocm/sgl-dev:upstream_20250312_v1 \
+  python3 -m sglang.launch_server --model deepseek-ai/DeepSeek-R1 --tp 8 --trust-remote-code --chunked-prefill-size 131072  --torch-compile-max-bs 256 --host 0.0.0.0 
+```
+ Once the application outputs “The server is fired up and ready to roll!”, you can begin making queries to the model. 
+
+ ```sh
+ curl http://localhost:30000/get_model_info 
+{"model_path":"deepseek-ai/DeepSeek-R1","tokenizer_path":"deepseek-ai/DeepSeek-R1","is_generation":true}
+```
+```sh 
+curl http://localhost:30000/generate -H "Content-Type: application/json" -d '{ "text": "Once upon a time,", "sampling_params": { "max_new_tokens": 16, "temperature": 0.6 } }'
+ ```
 ## Cleanup
 
 To delete the resource group and all associated resources:
 ```sh
 az group delete --name mi300x --yes --no-wait
 ```
+## Reference
+1. [Running DeepSeek-R1 on a single NDv5 MI300X VM](https://techcommunity.microsoft.com/blog/azurehighperformancecomputingblog/running-deepseek-r1-on-a-single-ndv5-mi300x-vm/4372726)
+2. [Supercharge DeepSeek-R1 Inference on AMD Instinct MI300X](https://rocm.blogs.amd.com/artificial-intelligence/DeepSeekR1-Part2/README.html)
 
 ## License
 
