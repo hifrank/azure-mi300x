@@ -7,6 +7,11 @@ This repository contains scripts and configuration files to create an AMD MI300x
 1. **Azure CLI**: Ensure you have the Azure CLI installed and authenticated. You can download it [here](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli).
 2. **SSH Key**: Generate an SSH key pair if you don't already have one. Place the public key in the `pub_ssh_key` file.
 3. **Azure Subscription**: Ensure you have an active Azure subscription with sufficient quota for the `Standard_ND96isr_MI300X_v5` VM size.
+   - To check your quota, run the following Azure CLI command:
+     ```sh
+     az vm list-usage --location westus --output table |grep MI300X
+     ```
+   - Look for the "NDv5 Series" quota and ensure it meets the requirements for the `Standard_ND96isr_MI300X_v5` VM size.
 
 ## Files in this Repository
 
