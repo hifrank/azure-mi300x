@@ -1,0 +1,43 @@
+#cloud-config
+package_update: true
+write_files:
+  - path: /opt/setup_nvme.sh
+    permissions: '0755'
+    owner: root:root
+    content: |
+      #!/bin/bash
+      NVME_DISKS_NAME=`ls /dev/nvme*n1`
+      NVME_DISKS=`ls -latr /dev/nvme*n1 | wc -l`
+
+      echo "Number of NVMe Disks: $NVME_DISKS"
+
+      if [ "$NVME_DISKS" == "0" ]
+      then
+          exit 0
+      else
+          mkdir -p /mnt/resource_nvme
+          # Needed incase something did not unmount as expected. This will delete any data that may be left behind
+          mdadm  --stop /dev/md*
+          mdadm --create /dev/md128 -f --run --level 0 --raid-devices $NVME_DISKS $NVME_DISKS_NAME
+          mkfs.xfs -f /dev/md128
+          mount /dev/md128 /mnt/resource_nvme
+      fi
+
+      chmod 1777 /mnt/resource_nvme
+  - path: /etc/profile.d/hf_home.sh
+    permissions: '0755'
+    content: |
+      export HF_HOME=/mnt/resource_nvme/hf_cache
+  - path: /etc/docker/daemon.json
+    permissions: '0644'
+    content: |
+      {
+        "data-root": "/mnt/resource_nvme/docker"
+      }
+runcmd:
+  - ["/bin/bash", "/opt/setup_nvme.sh"]
+  - mkdir -p /mnt/resource_nvme/docker
+  - mkdir -p /mnt/resource_nvme/hf_cache
+  # PAM group not working for docker group, so this will add all users to docker group
+  - bash -c 'for USER in $(ls /home); do usermod -aG docker $USER; done'
+  - systemctl restart docker
