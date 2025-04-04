@@ -125,7 +125,7 @@ vllm serve deepseek-ai/DeepSeek-R1 \
 --block-size=1 \
 --enable-chunked-prefill=False \
 --max-num-seqs 1024 \
---max-seq-len-to-capture 16384 
+--max-seq-len-to-capture 16384 \
 --port=8000
 ```
 wait until you see <br>
