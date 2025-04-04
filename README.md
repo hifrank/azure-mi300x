@@ -120,9 +120,7 @@ vllm serve deepseek-ai/DeepSeek-R1 \
 --disable-log-requests \
 --tensor-parallel-size 8 \
 --trust-remote-code \
---max-model-len 131072 \
---max_num_batched_tokens 131072 \
---block-size=1 \
+--max-model-len 32768 \
 --enable-chunked-prefill=False \
 --max-num-seqs 1024 \
 --max-seq-len-to-capture 16384 \
