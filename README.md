@@ -113,7 +113,7 @@ docker run -it --rm --ipc=host --network=host --group-add render \
     rocm/vllm-dev:main
 
 (inside the container)
-# max max-model-len is 32768 for now, ref: https://github.com/ROCm/vllm/blob/v0.8.2%2Brocm/docs/dev-docker/README.md#running-deepseek-v3-and-deepseek-r1
+
 
 export VLLM_USE_TRITON_FLASH_ATTN=0
 export NCCL_MIN_NCHANNELS=112
@@ -127,6 +127,9 @@ vllm serve deepseek-ai/DeepSeek-R1 \
 --max-seq-len-to-capture 16384 \
 --port=8000
 ```
+**NOTE**: max value of max-model-len is 32768 for now, ref: https://github.com/ROCm/vllm/blob/v0.8.2%2Brocm/docs/dev-docker/README.md#running-deepseek-v3-and-deepseek-r1 , or you will see error like"Memory access fault by GPU node-8 (Agent handle: 0xd40ed30) on address 0x7f36704c0000. Reason: Unknown.
+"
+
 wait until you see <br>
 ![alt text](vllm_server_start.png)
 ### Benchmark with llmperf
