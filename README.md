@@ -114,13 +114,19 @@ docker run -it --rm --ipc=host --network=host --group-add render \
 
 (inside the container)
 
+export VLLM_USE_TRITON_FLASH_ATTN=0
+export NCCL_MIN_NCHANNELS=112
 vllm serve deepseek-ai/DeepSeek-R1 \
-    --disable-log-requests \
-    --tensor-parallel-size 8 \
-    --trust-remote-code \
-    --max-model-len 131072 \
-    --block-size=1 \
-    --port=8000
+--disable-log-requests \
+--tensor-parallel-size 8 \
+--trust-remote-code \
+--max-model-len 131072 \
+--max_num_batched_tokens 131072 \
+--block-size=1 \
+--enable-chunked-prefill=False \
+--max-num-seqs 1024 \
+--max-seq-len-to-capture 16384 
+--port=8000
 ```
 wait until you see <br>
 ![alt text](vllm_server_start.png)
@@ -159,6 +165,8 @@ az group delete --name mi300x --yes --no-wait
 ## Reference
 1. [Running DeepSeek-R1 on a single NDv5 MI300X VM](https://techcommunity.microsoft.com/blog/azurehighperformancecomputingblog/running-deepseek-r1-on-a-single-ndv5-mi300x-vm/4372726)
 2. [Supercharge DeepSeek-R1 Inference on AMD Instinct MI300X](https://rocm.blogs.amd.com/artificial-intelligence/DeepSeekR1-Part2/README.html)
+3. [vllm FP8 Latency and Throughput benchmarks with vLLM on the AMD Instinct™ MI300X accelerator](https://github.com/ROCm/vllm/blob/main/docs/dev-docker/README.md)
+4. [Serving LLMs on AMD MI300X: Best Practices](https://blog.vllm.ai/2024/10/23/vllm-serving-amd.html)
 
 ## License
 
