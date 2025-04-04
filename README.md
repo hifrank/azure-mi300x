@@ -113,6 +113,7 @@ docker run -it --rm --ipc=host --network=host --group-add render \
     rocm/vllm-dev:main
 
 (inside the container)
+# max max-model-len is 32768 for now, ref: https://github.com/ROCm/vllm/blob/v0.8.2%2Brocm/docs/dev-docker/README.md#running-deepseek-v3-and-deepseek-r1
 
 export VLLM_USE_TRITON_FLASH_ATTN=0
 export NCCL_MIN_NCHANNELS=112
