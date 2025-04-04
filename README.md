@@ -100,6 +100,56 @@ docker run \
 ```sh 
 curl http://localhost:30000/generate -H "Content-Type: application/json" -d '{ "text": "Once upon a time,", "sampling_params": { "max_new_tokens": 16, "temperature": 0.6 } }'
  ```
+## Running VLLM server with DeepSeek R1, benchmark with llmperf
+### running vllm with deepseek R1
+```
+docker run -it --rm --ipc=host --network=host --group-add render \
+    --privileged --security-opt seccomp=unconfined \
+    --cap-add=CAP_SYS_ADMIN --cap-add=SYS_PTRACE \
+    --device=/dev/kfd --device=/dev/dri --device=/dev/mem \
+    -e VLLM_USE_TRITON_FLASH_ATTN=1 \
+    -e VLLM_USE_AITER=1 \
+    -e  VLLM_MLA_DISABLE=0 \
+    rocm/vllm-dev:main
+
+(inside the container)
+
+vllm serve deepseek-ai/DeepSeek-R1 \
+    --disable-log-requests \
+    --tensor-parallel-size 8 \
+    --trust-remote-code \
+    --max-model-len 131072 \
+    --block-size=1 \
+    --port=8000
+```
+wait until you see 
+![alt text](vllm_server_start.png)
+### Benchmark with llmperf
+1. install [llmperf](https://github.com/ray-project/llmperf)
+```
+git clone https://github.com/ray-project/llmperf.git
+cd llmperf
+pip install -e .
+```
+2. run benchmark (Below example assume running benchmark in the same server, replace <b>"localhost"</b> with correct server if you run benchmark in remote server)
+```
+mkdir ./hf_home
+OPENAI_API_BASE="http://localhost:8000/v1" HF_HOME="./hf_home" python3 token_benchmark_ray.py \
+--model "deepseek-ai/DeepSeek-R1" \
+--mean-input-tokens 550 \
+--stddev-input-tokens 150 \
+--mean-output-tokens 350 \
+--stddev-output-tokens 10 \
+--max-num-completed-requests 400 \
+--timeout 600 \
+--num-concurrent-requests 128 \
+--results-dir "result_outputs" \
+--llm-api openai \
+--additional-sampling-params '{}'
+```
+then you should able see result in result_outputs folder.
+![alt text](llmperf_output.png)
+![alt text](llmperf_reports.png)
 ## Cleanup
 
 To delete the resource group and all associated resources:
