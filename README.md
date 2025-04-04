@@ -122,7 +122,7 @@ vllm serve deepseek-ai/DeepSeek-R1 \
     --block-size=1 \
     --port=8000
 ```
-wait until you see 
+wait until you see <br>
 ![alt text](vllm_server_start.png)
 ### Benchmark with llmperf
 1. install [llmperf](https://github.com/ray-project/llmperf)
